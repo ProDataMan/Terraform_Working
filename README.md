@@ -15,8 +15,11 @@ Add a description to your key (Deployment Key)
 Click Create Access Key
 
 # Install AWS CLI
-sudo apt-get update
-sudo apt-get install awscli
+Windows
+https://awscli.amazonaws.com/AWSCLIV2.msi
+
+Mac
+https://awscli.amazonaws.com/AWSCLIV2.pkg
 
 # configure AWS
 aws configure
