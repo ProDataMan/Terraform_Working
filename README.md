@@ -14,6 +14,10 @@ Click Next
 Add a description to your key (Deployment Key)
 Click Create Access Key
 
+# Install AWS CLI
+sudo apt-get update
+sudo apt-get install awscli
+
 # configure AWS
 aws configure
 
@@ -22,4 +26,5 @@ Enter you AWS Secret Access Key
 Enter us-west-1 as the Default region name
 Accept the Default output format [None] (press enter)
 
-# 
+# Initialize Terraform
+c:\software\terraform init
