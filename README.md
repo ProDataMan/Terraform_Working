@@ -31,6 +31,7 @@ Copy and paste the example policy JSON below into the editor:
 
 json
 Copy code
+```
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -51,6 +52,7 @@ Copy code
     }
   ]
 }
+```
 Click on the Review policy button.
 
 Enter a Name for the policy (e.g., TerraformPolicy).
