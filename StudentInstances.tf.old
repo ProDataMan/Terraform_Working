@@ -1,0 +1,63 @@
+provider "aws" {
+  region = "us-west-1"
+}
+data "aws_security_group" "allin" {
+  name = "Everybody All In"
+}
+variable "number_of_students" {
+  description = "Number of students"
+  default     = 2
+}
+
+resource "aws_instance" "control_node" {
+  count = var.number_of_students
+  # Define instance configuration here
+  ami           = "ami-07013dd48140efd73"  # Specify your AMI ID
+  instance_type = "t2.micro"      # Specify your instance type
+  key_name      = "PDM_AWS_RSA_PEM"
+  vpc_security_group_ids = [data.aws_security_group.allin.id]
+  # Tags
+  tags = {
+    Name = "Student-${count.index + 1}-ControlNode"
+  }
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("PDM_AWS_RSA_PEM.pem")
+    host        = self.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update",
+      "sudo apt install -y ansible",
+    ]
+  }
+
+}
+resource "aws_instance" "target_node_1" {
+  count = var.number_of_students
+
+  # Define instance configuration here
+  ami           = "ami-07013dd48140efd73"  # Specify your AMI ID
+  instance_type = "t2.micro"      # Specify your instance type
+  key_name      = "PDM_AWS_RSA_PEM"
+  vpc_security_group_ids = [data.aws_security_group.allin.id]
+  # Tags
+  tags = {
+    Name = "Student-${count.index + 1}-TargetNode-1"
+  }
+}
+resource "aws_instance" "target_node_2" {
+  count = var.number_of_students
+
+  # Define instance configuration here
+  ami           = "ami-07013dd48140efd73"  # Specify your AMI ID
+  instance_type = "t2.micro"      # Specify your instance type
+  key_name      = "PDM_AWS_RSA_PEM"
+  vpc_security_group_ids = [data.aws_security_group.allin.id]
+  # Tags
+  tags = {
+    Name = "Student-${count.index + 1}-TargetNode-2"
+  }
+}

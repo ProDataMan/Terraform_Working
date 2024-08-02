@@ -1,0 +1,10 @@
+resource "aws_instance" "Web" {
+  ami           = "ami-07013dd48140efd73"  # Replace with your desired AMI ID
+  instance_type = "t3.micro"
+  tags = {
+    Name = "Ubuntu Server"
+  }
+ # subnet_id     = "vpc-0bf039e4e823f5223"  # Replace with your subnet ID
+  key_name      = "AWS_Ubuntu_RSA"
+ # security_groups = ["EveryBody All In"]  # Ensure the security group exists with this name
+}
