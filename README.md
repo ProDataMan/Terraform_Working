@@ -4,6 +4,16 @@ git clone https://github.com/ProDataMan/Terraform_Working.git
 # Copy terraform.exe.sav to c:\software\terraform.exe
 drag and drop
 
+# Create an Access Key in AWS
+search for the IAM service in the AWS Console
+Select users in the menu on the left under Access Management
+Find your user name in the list and click on it
+Click on Create Access Key (upper right)
+Select Applications running outside of AWS
+Click Next
+Add a description to your key (Deployment Key)
+Click Create Access Key
+
 # configure AWS
 aws configure
 
