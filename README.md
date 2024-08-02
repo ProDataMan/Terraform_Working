@@ -1,8 +1,13 @@
 # Clone the Terraform_Working repo
 git clone https://github.com/ProDataMan/Terraform_Working.git
 
-# Copy terraform.exe.sav to c:\software\terraform.exe
+# Copy terraform.exe.sav to c:\software\terraform.exe (for windows)
 drag and drop
+
+Note: If you are running Mac download the Mac version of Terraform
+
+# Terraformn Download
+https://developer.hashicorp.com/terraform/install
 
 # Create an Access Key in AWS
 search for the IAM service in the AWS Console
