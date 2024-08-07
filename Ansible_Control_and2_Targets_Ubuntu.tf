@@ -10,7 +10,6 @@ variable "number_of_students" {
   description = "Number of students"
 }
 
-
 variable "base_ami" {
   description = "AMI to start from"
   default     = "ami-0603cb4546aa25a8b"
@@ -20,9 +19,9 @@ variable "base_ami" {
 resource "aws_instance" "control_node" {
   count = var.number_of_students
 
-  ami           = var.base_ami
-  instance_type = "t2.micro"
-  key_name      = "AWSUbuntu2022"
+  ami                    = var.base_ami
+  instance_type          = "t2.micro"
+  key_name               = "FullStack"
   vpc_security_group_ids = [data.aws_security_group.allin.id]
 
   tags = {
@@ -32,7 +31,7 @@ resource "aws_instance" "control_node" {
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = file("AWSUbuntu2022.pem")
+    private_key = file("FullStack.pem")
     host        = self.public_ip
   }
 
@@ -48,9 +47,9 @@ resource "aws_instance" "control_node" {
 resource "aws_instance" "target_node_1" {
   count = var.number_of_students
 
-  ami           = var.base_ami
-  instance_type = "t2.micro"
-  key_name      = "AWSUbuntu2022"
+  ami                    = var.base_ami
+  instance_type          = "t2.micro"
+  key_name               = "FullStack"
   vpc_security_group_ids = [data.aws_security_group.allin.id]
 
   tags = {
@@ -61,9 +60,9 @@ resource "aws_instance" "target_node_1" {
 resource "aws_instance" "target_node_2" {
   count = var.number_of_students
 
-  ami           = var.base_ami
-  instance_type = "t2.micro"
-  key_name      = "AWSUbuntu2022"
+  ami                    = var.base_ami
+  instance_type          = "t2.micro"
+  key_name               = "FullStack"
   vpc_security_group_ids = [data.aws_security_group.allin.id]
 
   tags = {
@@ -79,9 +78,9 @@ resource "local_file" "generate_inventory" {
     aws_instance.target_node_1,
     aws_instance.target_node_2
   ]
-  
-  filename = "inventory_${count.index + 1}"  # Name each file uniquely
-  content = <<-EOT
+
+  filename = "inventory_${count.index + 1}" # Name each file uniquely
+  content  = <<-EOT
 [control]
 controlnode ansible_host=${aws_instance.control_node[count.index].public_ip}
 [webservers]
@@ -98,20 +97,17 @@ resource "null_resource" "copy_inventory_files" {
     inventory_file_created = local_file.generate_inventory[count.index].filename
   }
 
-
-
   provisioner "file" {
     source      = local_file.generate_inventory[count.index].filename
     destination = "inventory"
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("AWSUbuntu2022.pem")
+      private_key = file("FullStack.pem")
       host        = aws_instance.control_node[count.index].public_ip
     }
   }
 }
-
 
 # Use remote-exec to run Ansible playbook on control nodes
 resource "null_resource" "run_ansible" {
@@ -133,7 +129,42 @@ resource "null_resource" "run_ansible" {
   connection {
     type        = "ssh"
     user        = "ubuntu"
-    private_key = file("AWSUbuntu2022.pem")
+    private_key = file("FullStack.pem")
     host        = aws_instance.control_node[count.index].public_ip
+  }
+}
+
+# Ensure the target directory exists on the target nodes
+resource "null_resource" "ensure_html_directory" {
+  count = var.number_of_students * 2
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("FullStack.pem")
+    host        = element(concat(aws_instance.target_node_1.*.public_ip, aws_instance.target_node_2.*.public_ip), count.index)
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo mkdir -p /var/www/html"
+    ]
+  }
+
+  depends_on = [null_resource.run_ansible]
+}
+
+# Copy HTML files to target nodes after ensuring the directory exists
+resource "null_resource" "copy_html_to_target_nodes" {
+  count = var.number_of_students * 2
+
+  depends_on = [null_resource.ensure_html_directory]
+
+  triggers = {
+    html_folder_updated = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no -o ConnectionAttempts=5 -r -i FullStack.pem ./html ubuntu@${element(concat(aws_instance.target_node_1.*.public_ip, aws_instance.target_node_2.*.public_ip), count.index)}:/var/www/html/"
   }
 }
